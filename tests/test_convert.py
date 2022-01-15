@@ -44,7 +44,7 @@ def test_csr_from_coo_fixed():
 
 
 @given(st.data(), st.integers(0, 100), st.integers(0, 100),
-       st.sampled_from(['f4', 'f8']))
+       st.sampled_from(['f4', 'f8', 'c8', 'c16']))
 def test_csr_from_coo(data, nrows, ncols, dtype):
     dtype = np.dtype(dtype)
     n = nrows * ncols

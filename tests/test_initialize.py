@@ -1,3 +1,4 @@
+import logging
 from csr import CSR, constructors
 from csr.test_utils import has_memory
 import numpy as np
@@ -20,7 +21,7 @@ def test_empty(nrows, ncols):
 
 
 @given(st.data(), st.integers(0, 1000), st.integers(0, 1000),
-       st.one_of(st.booleans(), st.just('f4'), st.just('f8')))
+       st.one_of(st.booleans(), st.sampled_from(['f4', 'f8', 'c8', 'c16'])))
 def test_empty_csr(data, nrows, ncols, vdt):
     sizes = data.draw(nph.arrays(np.int32, nrows, elements=st.integers(0, ncols)))
     csr = CSR.empty(nrows, ncols, sizes, values=vdt)
