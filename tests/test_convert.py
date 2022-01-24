@@ -6,7 +6,7 @@ from csr import CSR
 from csr.test_utils import csrs, csr_slow, sparse_matrices
 
 from pytest import mark, approx, raises
-from hypothesis import given, assume, settings, HealthCheck
+from hypothesis import given, assume, settings, HealthCheck, Phase
 import hypothesis.strategies as st
 import hypothesis.extra.numpy as nph
 
@@ -56,7 +56,8 @@ def test_csr_from_coo(data, nrows, ncols, dtype):
     rows = np.mod(coords, nrows, dtype=np.int32)
     cols = np.floor_divide(coords, nrows, dtype=np.int32)
 
-    finite = nph.from_dtype(dtype, allow_infinity=False, allow_nan=False)
+    finite = nph.from_dtype(dtype, min_value=-1.0e6, max_value=1.0e6,
+                            allow_infinity=False, allow_nan=False)
     vals = data.draw(nph.arrays(dtype, nnz, elements=finite))
 
     csr = CSR.from_coo(rows, cols, vals, (nrows, ncols))
@@ -88,7 +89,7 @@ def test_csr_from_coo(data, nrows, ncols, dtype):
 def test_csr_from_coo_novals(data, nrows, ncols):
     n = nrows * ncols
     nnz = data.draw(st.integers(0, int(n * 0.75)))
-    _log.info('testing %d×%d (%d nnz) with no values', nrows, ncols, nnz)
+    _log.debug('testing %d×%d (%d nnz) with no values', nrows, ncols, nnz)
 
     coords = st.integers(0, max(n - 1, 0))
     coords = data.draw(nph.arrays(np.int32, nnz, elements=coords, unique=True))
@@ -118,11 +119,12 @@ def test_csr_from_coo_novals(data, nrows, ncols):
         assert np.sum(row) == ep - sp
 
 
-@given(csrs(values=True))
+@given(csrs(values=True, dtype=['f4', 'f8', 'c8', 'c16']))
 def test_csr_to_sps(csr):
     smat = csr.to_scipy()
     assert sps.isspmatrix(smat)
     assert sps.isspmatrix_csr(smat)
+    assert smat.data.dtype == csr.values.dtype
 
     for i in range(csr.nrows):
         assert smat.indptr[i] == csr.rowptrs[i]
