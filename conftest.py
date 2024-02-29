@@ -8,7 +8,7 @@ from csr.kernels import use_kernel, get_kernel
 # turn off Numba logging
 logging.getLogger('numba').setLevel(logging.INFO)
 
-KERNELS = ["scipy", "numba", "mkl"]
+KERNELS = ["scipy", "numba", "mkl", "graphblas"]
 DISABLED_KERNELS = []
 try:
     import csr.kernels.mkl  # noqa: F401
